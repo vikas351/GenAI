@@ -31,6 +31,11 @@ def load_vector_store(file_name):
     return vector_db.as_retriever()
 
 
+def process_pdf(pdf_file_path):
+    documents =  load_document(pdf_file_path)
+    chunked_documents =  chunk_documents(documents)
+    retriever =  store_in_vectorstore(pdf_file_path,chunked_documents)
+    return retriever
     
 
 
