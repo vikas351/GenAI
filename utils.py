@@ -76,6 +76,10 @@ def search_collection(query,collection_name):
 
 
 
+
+
+
+
 def load_vector_store(file_name):
     embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     persist_directory = f"./data/{os.path.basename(file_name).split('.')[0]}"
