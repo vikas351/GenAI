@@ -59,6 +59,7 @@ def store_in_vectorstore(file_name,chunked_documents):
                     documents=documents,
                     embeddings=embeddings,
                     metadatas=metadata)
+    return True
 
 
 def search_collection(query,collection_name):
@@ -74,24 +75,13 @@ def search_collection(query,collection_name):
     return content
 
 
-
-
-
-
-
-
-def load_vector_store(file_name):
-    embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-    persist_directory = f"./data/{os.path.basename(file_name).split('.')[0]}"
-    vector_db = Chroma(persist_directory = persist_directory,embedding_function = embedding_model)
-    return vector_db.as_retriever()
-
-
 def process_pdf(pdf_file_path):
+    pdf_file_path =  os.path.join('./data',pdf_file_path)
     documents =  load_document(pdf_file_path)
     chunked_documents =  chunk_documents(documents)
-    retriever =  store_in_vectorstore(pdf_file_path,chunked_documents)
-    return retriever
+    status  =  store_in_vectorstore(pdf_file_path,chunked_documents)
+    return status
+    
     
 
 
