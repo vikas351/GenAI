@@ -5,6 +5,13 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import Chroma
 import uuid
 import chromadb
+from langchain_google_genai import ChatGoogleGenerativeAI
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def load_document(file_path):
@@ -24,7 +31,6 @@ def chunk_documents(documents):
 def store_in_vectorstore(file_name,chunked_documents):
     embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001",batch_size =100)
     collection_name = f"{os.path.basename(file_name).split('.')[0]}"
-
     batch_size = 100
     final_embeddings =  []
     for i in range(0, len(chunked_documents), batch_size):
@@ -63,15 +69,18 @@ def store_in_vectorstore(file_name,chunked_documents):
 
 
 def search_collection(query,collection_name):
+    logging.info(f"Connecting to Collection {collection_name}")
     embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001",batch_size =100)
     embedding = list(embedding_model.embed_query(query))
     client = chromadb.PersistentClient(path="./data")
     collection = client.get_or_create_collection(collection_name)
     results =  collection.query(embedding)
+    logger.info(f"Results: {results}")
     retrieved_docs = results['documents']
     content = ''' '''
-    for doc in retrieved_docs['documents']:
+    for doc in retrieved_docs:
         content += '/n'.join(doc)
+    logger.info(content)
     return content
 
 
@@ -82,7 +91,28 @@ def process_pdf(pdf_file_path):
     status  =  store_in_vectorstore(pdf_file_path,chunked_documents)
     return status
     
-    
+
+def condense_question(question,history):
+    prompt =  """Based on the user conversation history ,if it a followup question phrase a new question,
+    else send the question as it is
+    Conversation History:
+    {history}
+    New Question: {question}
+    """
+    llm =  ChatGoogleGenerativeAI(model="gemini-pro")
+    response =  llm.invoke(prompt.format(history = history,question = question))
+    return response.content
+
+
+def chat_with_document(question,collection_name):
+    prompt = """You are an expert in answering machine,solely based on the provided question answer user's question
+    Question:{question}
+    -----
+    context:{context}"""
+    context =  search_collection(question,collection_name)
+    llm =  ChatGoogleGenerativeAI(model="gemini-pro")
+    response =  llm.invoke(prompt.format(question =  question, context  = context))
+    return response.content
 
 
 
