@@ -1,1 +1,3 @@
 # GenAI
+
+docker compose up
