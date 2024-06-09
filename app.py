@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from utils import process_pdf,condense_question,chat_with_document
+from utils import process_pdf,condense_question,chat_with_document,get_collection_names
 from typing import Dict, List
 import logging
 
@@ -29,23 +29,26 @@ def get_collection_name(session_id):
         return collection_name
     
 
-
-
 class ConversationPayload(BaseModel):
     session_id: str
     user_message: str
+    collection_name: str
 
 class UploadPdf(BaseModel):
     session_id: str
     file_name: str
 
+
+
 @app.post("/chat")
 async def chat(conversation: ConversationPayload):
     session_id = conversation.session_id
     user_message = conversation.user_message
+    collection_name  =  conversation.collection_name
+
     history = get_history(session_id)
     rephrased_question =  condense_question(user_message,history)
-    collection_name =  get_collection_name(session_id)
+
     logger.info(f"collection name {collection_name}")
     assistant_message =  chat_with_document(rephrased_question,collection_name)
     # Append the user message to the session history
@@ -74,6 +77,17 @@ async def upload(upload: UploadPdf):
         'session_id': session_id
     }
     return response
+
+
+@app.get("/getCollections")
+def get_collections():
+    collections =  get_collection_names()
+
+    response =  {
+        'collections': collections
+    }
+    return response
+
 
 if __name__ == "__main__":
     import uvicorn

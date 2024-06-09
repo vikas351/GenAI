@@ -6,6 +6,6 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./data:/data
+      - ./data:/app/data
     env_file:
       - .env
