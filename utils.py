@@ -128,13 +128,20 @@ def condense_question(question,history):
 
 
 def chat_with_document(question,collection_name):
-    prompt = """You are an expert in answering machine,solely based on the provided question answer user's question
-    Question:{question}
-    -----
-    context:{context}"""
-    context =  search_collection(question,collection_name)
-    llm =  ChatGoogleGenerativeAI(model="gemini-pro")
-    response =  llm.invoke(prompt.format(question =  question, context  = context))
+    if collection_name != ""
+        prompt = """You are an expert in answering machine,solely based on the provided question answer user's question
+        Question:{question}
+        -----
+        context:{context}"""
+        context =  search_collection(question,collection_name)
+        llm =  ChatGoogleGenerativeAI(model="gemini-pro")
+        response =  llm.invoke(prompt.format(question =  question, context  = context))
+    else:
+        prompt = """You are an expert assistant,respond to the user's question in a polite manner
+        Question:{question}
+        """
+        llm =  ChatGoogleGenerativeAI(model="gemini-pro")
+        response =  llm.invoke(prompt.format(question =  question))  
     return response.content
 
 
